@@ -112,6 +112,7 @@ describe('updateEditor', () => {
         icon: '',
         title: 'Console',
       },
+      ['editor1', 'editor2'],
     );
 
     expect(mockPatchTemplate).toHaveBeenCalledWith(namespace, editorName, ['update1']);

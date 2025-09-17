@@ -55,6 +55,8 @@ describe('DevWorkspace client editor update', () => {
         pluginRegistryUrl,
         pluginRegistryInternalUrl,
         undefined,
+        undefined,
+        [],
       );
 
       expect(mockPatch.mock.calls).toEqual([
@@ -88,6 +90,8 @@ describe('DevWorkspace client editor update', () => {
         pluginRegistryUrl,
         pluginRegistryInternalUrl,
         undefined,
+        undefined,
+        [],
       );
 
       expect(mockPatch.mock.calls).toEqual([
@@ -119,6 +123,8 @@ describe('DevWorkspace client editor update', () => {
         pluginRegistryUrl,
         pluginRegistryInternalUrl,
         undefined,
+        undefined,
+        [],
       );
 
       expect(mockPatch.mock.calls).toEqual([
@@ -154,6 +160,8 @@ describe('DevWorkspace client editor update', () => {
         pluginRegistryUrl,
         pluginRegistryInternalUrl,
         undefined,
+        undefined,
+        [],
       );
 
       expect(mockGet.mock.calls).toEqual([
@@ -204,6 +212,8 @@ describe('DevWorkspace client editor update', () => {
         pluginRegistryUrl,
         pluginRegistryInternalUrl,
         undefined,
+        undefined,
+        [],
       );
 
       expect(mockPost.mock.calls).toEqual([
@@ -246,6 +256,8 @@ describe('DevWorkspace client editor update', () => {
         pluginRegistryUrl,
         pluginRegistryInternalUrl,
         undefined,
+        undefined,
+        [],
       );
 
       expect(mockGet.mock.calls).toEqual([
@@ -293,6 +305,8 @@ describe('DevWorkspace client editor update', () => {
         pluginRegistryUrl,
         pluginRegistryInternalUrl,
         undefined,
+        undefined,
+        [],
       );
 
       expect(mockPatch.mock.calls).toEqual([

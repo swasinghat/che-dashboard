@@ -44,6 +44,7 @@ export async function updateEditor(editorName: string, getState: () => RootState
   );
 
   try {
+    const cmEditors = state.dwPlugins.cmEditors || [];
     const updates = await devWorkspaceClient.checkForTemplatesUpdate(
       editorName,
       namespace,
@@ -52,6 +53,7 @@ export async function updateEditor(editorName: string, getState: () => RootState
       pluginRegistryInternalUrl,
       openVSXUrl,
       clusterConsole,
+      cmEditors,
     );
     if (updates.length > 0) {
       await DwtApi.patchTemplate(namespace, editorName, updates);

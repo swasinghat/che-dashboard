@@ -10,26 +10,48 @@
  *   Red Hat, Inc. - initial API and implementation
  */
 
-import { ThunkDispatch, UnknownAction } from '@reduxjs/toolkit';
 import { dump, load } from 'js-yaml';
 
 import devfileApi, { isDevfileV2 } from '@/services/devfileApi';
+import { fetchData } from '@/services/registry/fetchData';
 import { ICheEditorYaml } from '@/services/workspace-client/devworkspace/devWorkspaceClient';
 import { CHE_EDITOR_YAML_PATH } from '@/services/workspace-client/helpers';
-import { RootState } from '@/store';
-import { getEditor } from '@/store/DevfileRegistries/getEditor';
+import { EDITOR_DEVFILE_API_QUERY } from '@/store/DevfileRegistries/const';
+
+function isCheEditorYamlPath(path: string): boolean {
+  return /(\/api\/scm\/resolve\?repository)*che-editor.yaml$/.test(path);
+}
+
+export async function getEditorFromUrl(
+  url: string,
+  cmEditors: devfileApi.Devfile[],
+): Promise<devfileApi.Devfile | undefined> {
+  let editor: devfileApi.Devfile | undefined = undefined;
+  let editorContent = (await fetchData<string | devfileApi.Devfile>(url)) || undefined;
+  if (typeof editorContent === 'string') {
+    // Special handling of che-editor.yaml to support inlined editor
+    if (isCheEditorYamlPath(url)) {
+      editorContent = await getCustomEditor(
+        { [CHE_EDITOR_YAML_PATH]: { location: url, content: editorContent } },
+        cmEditors,
+      );
+    }
+    if (editorContent) {
+      editor = load(editorContent) as devfileApi.Devfile;
+    }
+  } else if (typeof editorContent === 'object') {
+    editor = editorContent;
+  }
+  return editor;
+}
 
 /**
  * Look for the custom editor in .che/che-editor.yaml
  */
-export async function getCustomEditor(
+async function getCustomEditor(
   optionalFilesContent: { [fileName: string]: { location: string; content: string } | undefined },
-  dispatch: ThunkDispatch<RootState, unknown, UnknownAction>,
-  getState: () => RootState,
+  cmEditors: devfileApi.Devfile[],
 ): Promise<string | undefined> {
-  // let editorsDevfile: devfileApi.Devfile | undefined;
-
-  // do we have a custom editor specified in the repository ?
   const cheEditorYaml = optionalFilesContent[CHE_EDITOR_YAML_PATH]?.content
     ? (load(optionalFilesContent[CHE_EDITOR_YAML_PATH].content) as ICheEditorYaml)
     : undefined;
@@ -62,7 +84,7 @@ export async function getCustomEditor(
     editorReference = cheEditorYaml.reference;
   }
   if (editorReference) {
-    const response = await getEditor(editorReference, dispatch, getState);
+    const response = await getEditor(editorReference, cmEditors);
     if (response.content) {
       const yaml = load(response.content);
       repositoryEditorYaml = isDevfileV2(yaml) ? yaml : undefined;
@@ -105,4 +127,48 @@ export async function getCustomEditor(
     );
   }
   return dump(repositoryEditorYaml);
+}
+
+async function getEditor(
+  editorIdOrPath: string,
+  cmEditors: devfileApi.Devfile[],
+): Promise<{ content?: string; editorYamlUrl: string; error?: string }> {
+  let editorYamlUrl: string;
+
+  if (/^(https?:\/\/)/.test(editorIdOrPath)) {
+    editorYamlUrl = editorIdOrPath;
+    try {
+      const devfile = await fetchData<string>(editorYamlUrl);
+      if (devfile) {
+        return { content: devfile, editorYamlUrl, error: undefined };
+      }
+      return {
+        content: undefined,
+        editorYamlUrl,
+        error: `Failed to fetch editor yaml by URL: ${editorYamlUrl}.`,
+      };
+    } catch (error) {
+      return {
+        content: undefined,
+        editorYamlUrl,
+        error: `Failed to fetch a devfile from URL: ${editorYamlUrl}, reason: ` + error,
+      };
+    }
+  } else {
+    const editorId = editorIdOrPath;
+    // Find the editor by id
+    const editor = cmEditors.find(
+      editor =>
+        `${editor.metadata.attributes.publisher}/${editor.metadata.name}/${editor.metadata.attributes.version}` ===
+        editorId,
+    );
+    if (editor) {
+      return {
+        content: dump(editor),
+        editorYamlUrl: `${EDITOR_DEVFILE_API_QUERY}${editorId}`,
+      };
+    } else {
+      throw new Error(`Failed to fetch editor yaml by id: ${editorIdOrPath}.`);
+    }
+  }
 }
