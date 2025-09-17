@@ -11,9 +11,7 @@
  */
 
 import common from '@eclipse-che/common';
-import { load } from 'js-yaml';
 
-import devfileApi from '@/services/devfileApi';
 import { che } from '@/services/models';
 import {
   fetchRegistryMetadata,
@@ -22,7 +20,6 @@ import {
   resolveTags,
   updateObjectLinks,
 } from '@/services/registry/devfiles';
-import { fetchData } from '@/services/registry/fetchData';
 import SessionStorageService, { SessionStorageKey } from '@/services/session-storage';
 
 const mockFetchData = jest.fn();
@@ -39,21 +36,6 @@ jest.mock('@/services/backend-client/dataResolverApi', () => {
   return {
     getDataResolver: async (href: string) => {
       return mockFetchRemoteData(href);
-    },
-  };
-});
-// import { getEditorFromUrl } from '@/services/workspace-client/devworkspace/devWorkspaceEditor
-jest.mock('@/services/workspace-client/devworkspace/devWorkspaceEditor', () => {
-  return {
-    getEditorFromUrl: async (url: string) => {
-      let editor: devfileApi.Devfile | undefined = undefined;
-      const editorContent = await fetchData<string | devfileApi.Devfile>(url);
-      if (typeof editorContent === 'string') {
-        editor = load(editorContent) as devfileApi.Devfile;
-      } else if (typeof editorContent === 'object') {
-        editor = editorContent;
-      }
-      return editor;
     },
   };
 });
