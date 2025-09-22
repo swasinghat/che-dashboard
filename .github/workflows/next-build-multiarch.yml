@@ -17,7 +17,7 @@ on:
     inputs: {}
   push:
     branches:
-      - main
+      - s390x-support
 
 env:
   IMAGE: quay.io/eclipse/che-dashboard
