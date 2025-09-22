@@ -17,10 +17,10 @@ on:
     inputs: {}
   push:
     branches:
-      - s390x-support
+      - main
 
 env:
-  IMAGE: quay.io/swasingh/che-dashboard
+  IMAGE: quay.io/eclipse/che-dashboard
 
 jobs:
 
