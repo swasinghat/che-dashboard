@@ -20,7 +20,7 @@ on:
       - s390x-support
 
 env:
-  IMAGE: quay.io/eclipse/che-dashboard
+  IMAGE: quay.io/swasingh/che-dashboard
 
 jobs:
 
